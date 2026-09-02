@@ -1,0 +1,6 @@
+﻿__pycache__/
+*.pyc
+.env
+workspace/_temp_script.py
+.vscode/
+cloudflared.exe
