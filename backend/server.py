@@ -9,7 +9,8 @@ from pydantic import BaseModel
 from dotenv import load_dotenv, set_key
 
 ENV_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
-load_dotenv(ENV_FILE)
+if os.path.exists(ENV_FILE):
+    load_dotenv(ENV_FILE)
 
 from backend.agent import AIAssistantAgent
 from backend.tools import tool_manage_notes, tool_list_files, WORKSPACE_DIR, DATA_DIR
@@ -26,7 +27,7 @@ app.add_middleware(
 
 agent = AIAssistantAgent(
     api_key=os.getenv("AI_API_KEY") or os.getenv("OPENAI_API_KEY", ""),
-    model=os.getenv("AI_MODEL", "llama-3.3-70b-versatile"),
+    model=os.getenv("AI_MODEL", "openai/gpt-oss-120b"),
     provider=os.getenv("AI_PROVIDER", "groq")
 )
 
@@ -60,7 +61,7 @@ def get_settings():
         "has_api_key": bool(env_key),
         "masked_key": masked_key,
         "provider": agent.provider or "groq",
-        "model": agent.model or "llama-3.3-70b-versatile",
+        "model": agent.model or "openai/gpt-oss-120b",
         "system_prompt": agent.system_prompt
     }
 
@@ -68,20 +69,29 @@ def get_settings():
 def update_settings(data: SettingsUpdate):
     if data.api_key:
         agent.api_key = data.api_key
-        if not os.path.exists(ENV_FILE):
-            with open(ENV_FILE, "w") as f:
-                f.write("")
-        set_key(ENV_FILE, "AI_API_KEY", data.api_key)
+        try:
+            if not os.path.exists(ENV_FILE):
+                with open(ENV_FILE, "w") as f:
+                    f.write("")
+            set_key(ENV_FILE, "AI_API_KEY", data.api_key)
+        except Exception:
+            pass
         os.environ["AI_API_KEY"] = data.api_key
 
     if data.provider:
         agent.provider = data.provider
-        set_key(ENV_FILE, "AI_PROVIDER", data.provider)
+        try:
+            set_key(ENV_FILE, "AI_PROVIDER", data.provider)
+        except Exception:
+            pass
         os.environ["AI_PROVIDER"] = data.provider
 
     if data.model:
         agent.model = data.model
-        set_key(ENV_FILE, "AI_MODEL", data.model)
+        try:
+            set_key(ENV_FILE, "AI_MODEL", data.model)
+        except Exception:
+            pass
         os.environ["AI_MODEL"] = data.model
 
     if data.system_prompt:
@@ -136,4 +146,5 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
-app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+if os.path.exists(FRONTEND_DIR):
+    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
