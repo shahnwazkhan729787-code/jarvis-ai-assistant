@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>JARVIS / SAKSHI — Shahnawaz's AI Assistant</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <link rel="stylesheet" href="style.css?v=9" />
+</head>
+<body>
+  <div class="background-glow glow-1"></div>
+  <div class="background-glow glow-2"></div>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-core">
+          <img src="logo.png" alt="Sakshi AI Logo" class="brand-logo-img" />
+          <div class="reactor-ring"></div>
+        </div>
+        <div class="brand-text">
+          <h2>SAKSHI / JARVIS</h2>
+          <span>SHAHNAWAZ'S AI</span>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <button class="nav-btn active" id="btn-nav-chat" title="Chat Room">
+          <i class="fa-solid fa-message"></i>
+          <span>Chat Mode</span>
+        </button>
+        <button class="nav-btn btn-call-mode" id="btn-nav-call" title="Live Voice Call (Hands-Free)">
+          <i class="fa-solid fa-phone-volume"></i>
+          <span>Live Voice Call</span>
+          <span class="live-dot"></span>
+        </button>
+        <button class="nav-btn" id="btn-nav-notes" title="Notes & Reminders">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <span>Notes</span>
+        </button>
+        <button class="nav-btn" id="btn-nav-workspace" title="Workspace Files">
+          <i class="fa-solid fa-folder-open"></i>
+          <span>Workspace</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="nav-btn btn-settings" id="btn-open-settings" title="API Settings">
+          <i class="fa-solid fa-gear"></i>
+          <span>API Settings</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CHAT CONTAINER -->
+    <main class="chat-container">
+      <header class="top-header">
+        <div class="header-status">
+          <span class="status-indicator online"></span>
+          <div class="status-info">
+            <span class="status-title">SHAHNAWAZ'S AI ONLINE</span>
+            <span class="status-subtitle" id="active-model-tag">GPT-OSS 120B (Free)</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="action-btn call-action-btn" id="btn-start-call" title="Start Live Hands-Free Voice Call">
+            <i class="fa-solid fa-phone-volume"></i>
+            <span class="btn-label">Start Voice Call</span>
+          </button>
+          <button class="action-btn" id="btn-voice-output" title="Toggle Voice Speech Output">
+            <i class="fa-solid fa-volume-high"></i>
+            <span class="btn-label">Voice Output</span>
+          </button>
+          <button class="action-btn" id="btn-clear-chat" title="Clear Conversation">
+            <i class="fa-solid fa-broom"></i>
+            <span class="btn-label">Clear</span>
+          </button>
+          <button class="action-btn" id="btn-top-settings" title="Open Settings">
+            <i class="fa-solid fa-key"></i>
+            <span class="btn-label">API Key</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- MESSAGES SCROLL AREA -->
+      <section class="messages-area" id="messages-container">
+        <!-- WELCOME HERO -->
+        <div class="welcome-card" id="welcome-hero">
+          <div class="hero-logo-box">
+            <img src="logo.png" alt="Personal AI Logo" class="hero-logo-img" />
+          </div>
+          <h1>Namaste <span class="highlight">Shahnawaz Bhai!</span></h1>
+          <p>Main aapka personal <strong>AI Assistant</strong> hoon, jise <strong>Shahnawaz</strong> (BCA Second Year Student) ne develop kiya hai. Main voice conversation, coding, Live Web Search aur study tasks ke liye ready hoon!</p>
+          
+          <div class="voice-hero-action">
+            <button class="btn-big-call" id="btn-hero-call">
+              <i class="fa-solid fa-microphone-lines"></i>
+              <span>Start Live Voice Conversation (Bolkar Baat Karein)</span>
+            </button>
+          </div>
+
+          <div class="quick-prompts">
+            <button class="prompt-chip" data-prompt="Tumko kisne develop kiya hai?">
+              <i class="fa-solid fa-code-branch"></i> "Tumhe kisne develop kiya hai?"
+            </button>
+            <button class="prompt-chip" data-prompt="Namaste Jarvis, BCA Second year Data Structures me kaunse important topics hain?">
+              <i class="fa-solid fa-book-bookmark"></i> "BCA Second Year Topics"
+            </button>
+            <button class="prompt-chip" data-prompt="Python code likhkar run karo jo QuickSort algorithm execute kare">
+              <i class="fa-solid fa-code"></i> "Run QuickSort Python Script"
+            </button>
+            <button class="prompt-chip" data-prompt="Aaj ki taaza tech aur coding news search karke batao">
+              <i class="fa-solid fa-globe"></i> "Aaj ki Tech & Coding News"
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- BOTTOM INPUT FORM -->
+      <footer class="input-container">
+        <div class="upload-preview" id="upload-preview" style="display: none;">
+          <i class="fa-solid fa-file-arrow-up"></i>
+          <span id="upload-filename">file.txt</span>
+          <button id="btn-remove-upload"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="input-box">
+          <button class="tool-btn" id="btn-attach-file" title="Upload File / Document">
+            <i class="fa-solid fa-paperclip"></i>
+          </button>
+          <input type="file" id="file-input" style="display: none;" />
+
+          <textarea 
+            id="user-input" 
+            placeholder="Shahnawaz bhai, kuch bhi boliye ya poochiye... (Enter to send)"
+            rows="1"
+          ></textarea>
+
+          <button class="mic-btn" id="btn-mic" title="Voice Input (Speech to Text)">
+            <i class="fa-solid fa-microphone"></i>
+            <span class="mic-ripple"></span>
+          </button>
+
+          <button class="send-btn" id="btn-send" title="Send Message">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </div>
+        <div class="input-hints">
+          <span><i class="fa-solid fa-user-gear"></i> Developed by Shahnawaz — BCA Second Year</span>
+          <span><i class="fa-solid fa-bolt"></i> Fast Voice Engine Active</span>
+        </div>
+      </footer>
+    </main>
+
+    <!-- RIGHT DRAWER -->
+    <aside class="right-drawer" id="right-drawer">
+      <div class="drawer-header">
+        <h3 id="drawer-title">Notes & Reminders</h3>
+        <button class="close-drawer-btn" id="btn-close-drawer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="drawer-content" id="drawer-notes-view">
+        <div class="new-note-form">
+          <input type="text" id="new-note-title" placeholder="Note Title / Reminder..." />
+          <textarea id="new-note-content" placeholder="Details..."></textarea>
+          <button class="btn-primary" id="btn-save-note">
+            <i class="fa-solid fa-plus"></i> Add Note
+          </button>
+        </div>
+        <div class="notes-list" id="notes-list"></div>
+      </div>
+
+      <div class="drawer-content" id="drawer-workspace-view" style="display: none;">
+        <div class="workspace-actions">
+          <button class="btn-primary" id="btn-refresh-workspace">
+            <i class="fa-solid fa-rotate"></i> Refresh Files
+          </button>
+        </div>
+        <div class="files-list" id="files-list"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- FULLSCREEN LIVE VOICE CALL OVERLAY -->
+  <div class="voice-call-overlay" id="voice-call-modal">
+    <div class="call-container">
+      <div class="call-top-bar">
+        <div class="call-status-badge">
+          <span class="pulse-call-dot"></span>
+          <span id="call-status-text">JARVIS VOICE CALL LIVE</span>
+        </div>
+        <button class="btn-end-call-x" id="btn-close-call"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="voice-orb-wrapper">
+        <div class="reactor-orb" id="reactor-orb">
+          <img src="logo.png" class="orb-logo-img" alt="Logo" />
+          <div class="orb-ring-1"></div>
+          <div class="orb-ring-2"></div>
+        </div>
+        <div class="sound-wave-bars" id="sound-wave-bars">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+      </div>
+
+      <div class="call-transcript-box">
+        <p class="user-live-speech" id="call-user-text">Shahnawaz boliye, sun raha hoon...</p>
+        <p class="ai-live-speech" id="call-ai-text"></p>
+      </div>
+
+      <div class="call-controls">
+        <button class="call-ctrl-btn btn-call-mic" id="btn-call-mic-toggle" title="Mute/Unmute Mic">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+        <button class="call-ctrl-btn btn-call-hangup" id="btn-call-hangup" title="End Call">
+          <i class="fa-solid fa-phone-slash"></i>
+        </button>
+        <button class="call-ctrl-btn btn-call-speaker" id="btn-call-speaker-toggle" title="Mute/Unmute AI Voice">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+      </div>
+      <small class="call-hint">🎙️ Developed by Shahnawaz | Hands-Free Fast Mode Active</small>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-sliders"></i> AI Provider & API Key Settings</h2>
+        <button class="modal-close-btn" id="btn-close-settings"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label><i class="fa-solid fa-server"></i> 1. Select AI Provider</label>
+          <select id="select-provider">
+            <option value="groq" selected>⚡ Groq Cloud (100% FREE - Super Fast)</option>
+            <option value="openrouter">🌐 OpenRouter (FREE Models)</option>
+            <option value="openai">🤖 OpenAI (Paid)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-key"></i> 2. Paste API Key</label>
+          <div class="input-password-wrapper">
+            <input type="password" id="input-api-key" placeholder="gsk_... or sk-..." />
+            <button class="btn-toggle-eye" id="btn-toggle-eye"><i class="fa-solid fa-eye"></i></button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-microchip"></i> 3. Model Selection</label>
+          <select id="select-model">
+            <option value="openai/gpt-oss-120b" selected>GPT-OSS 120B (Free, Super Smart - Recommended)</option>
+            <option value="openai/gpt-oss-20b">GPT-OSS 20B (Free, Ultra Fast)</option>
+            <option value="qwen/qwen3.8-27b">Qwen 3.8 27B (Free, Multilingual)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-user-gear"></i> System Prompt / Personality</label>
+          <textarea id="input-system-prompt" rows="3" placeholder="Assistant behavior..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <span class="save-status" id="settings-status"></span>
+        <button class="btn-primary" id="btn-save-settings">
+          <i class="fa-solid fa-floppy-disk"></i> Save & Connect
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=9"></script>
+</body>
+</html>
