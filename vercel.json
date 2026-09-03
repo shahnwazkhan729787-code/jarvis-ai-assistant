@@ -12,16 +12,8 @@
       "dest": "api/index.py"
     },
     {
-      "src": "/logo.png",
-      "dest": "/public/logo.png"
-    },
-    {
-      "src": "/style.css",
-      "dest": "/public/style.css"
-    },
-    {
-      "src": "/app.js",
-      "dest": "/public/app.js"
+      "src": "/(style\\.css|app\\.js|logo\\.png)",
+      "dest": "/public/$1"
     },
     {
       "src": "/(.*)",
