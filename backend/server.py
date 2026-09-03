@@ -3,8 +3,7 @@ import json
 from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv, set_key
 
@@ -30,6 +29,47 @@ agent = AIAssistantAgent(
     model=os.getenv("AI_MODEL", "openai/gpt-oss-120b"),
     provider=os.getenv("AI_PROVIDER", "groq")
 )
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+def find_static_file(filename: str):
+    candidates = [
+        os.path.join(BASE_DIR, "public", filename),
+        os.path.join(BASE_DIR, filename),
+        os.path.join(BASE_DIR, "frontend", filename)
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return None
+
+@app.get("/")
+def serve_index():
+    path = find_static_file("index.html")
+    if path:
+        return FileResponse(path, media_type="text/html")
+    return {"status": "ok", "message": "Jarvis AI Assistant Backend Running"}
+
+@app.get("/style.css")
+def serve_css():
+    path = find_static_file("style.css")
+    if path:
+        return FileResponse(path, media_type="text/css")
+    raise HTTPException(status_code=404)
+
+@app.get("/app.js")
+def serve_js():
+    path = find_static_file("app.js")
+    if path:
+        return FileResponse(path, media_type="application/javascript")
+    raise HTTPException(status_code=404)
+
+@app.get("/logo.png")
+def serve_logo():
+    path = find_static_file("logo.png")
+    if path:
+        return FileResponse(path, media_type="image/png")
+    raise HTTPException(status_code=404)
 
 class ChatMessage(BaseModel):
     role: str
@@ -144,6 +184,3 @@ async def upload_file(file: UploadFile = File(...)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Static files are served by Vercel from the public/ directory
-# No StaticFiles mount needed in serverless deployment
