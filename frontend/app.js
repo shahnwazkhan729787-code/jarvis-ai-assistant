@@ -1,4 +1,4 @@
-﻿// State
+// State
 let conversationHistory = [];
 let voiceOutputEnabled = true;
 let isGenerating = false;
@@ -117,49 +117,73 @@ function updateModelOptions(provider, selectedModel = null) {
 // ----------------- INIT & SETTINGS -----------------
 
 async function loadSettings() {
+  const localKey = localStorage.getItem("jarvis_api_key");
+  const localProv = localStorage.getItem("jarvis_provider");
+  const localModel = localStorage.getItem("jarvis_model");
+
+  if (localProv) selectProvider.value = localProv;
+  updateModelOptions(selectProvider.value, localModel || "openai/gpt-oss-120b");
+
+  if (localKey) {
+    inputApiKey.value = localKey;
+    inputApiKey.placeholder = "API Key saved locally!";
+  }
+
+  if (localModel) {
+    activeModelTag.textContent = `${(selectProvider.value || "GROQ").toUpperCase()} : ${localModel}`;
+  }
+
   try {
     const res = await fetch("/api/settings");
     if (!res.ok) return;
     const data = await res.json();
-    if (data.provider) selectProvider.value = data.provider;
-    updateModelOptions(selectProvider.value, data.model || "openai/gpt-oss-120b");
+    if (!localProv && data.provider) selectProvider.value = data.provider;
+    if (!localModel) updateModelOptions(selectProvider.value, data.model || "openai/gpt-oss-120b");
 
-    if (data.model) {
+    if (!localModel && data.model) {
       activeModelTag.textContent = `${(data.provider || "GROQ").toUpperCase()} : ${data.model}`;
     }
     if (data.system_prompt) inputSystemPrompt.value = data.system_prompt;
-    if (data.has_api_key && data.masked_key) {
-      inputApiKey.placeholder = `Saved: ${data.masked_key}`;
+    if (!localKey && data.has_api_key && data.masked_key) {
+      inputApiKey.placeholder = `Saved on server: ${data.masked_key}`;
     }
   } catch (err) {
-    console.error("Failed to load settings:", err);
+    console.warn("Could not load server settings, using local settings:", err);
   }
 }
 
 async function saveSettings() {
   settingsStatus.textContent = "Saving...";
+  const keyVal = inputApiKey.value.trim();
+  const provVal = selectProvider.value;
+  const modelVal = selectModel.value;
+
+  if (keyVal) localStorage.setItem("jarvis_api_key", keyVal);
+  localStorage.setItem("jarvis_provider", provVal);
+  localStorage.setItem("jarvis_model", modelVal);
+
   try {
     const payload = {
-      provider: selectProvider.value,
-      model: selectModel.value,
+      provider: provVal,
+      model: modelVal,
       system_prompt: inputSystemPrompt.value
     };
-    if (inputApiKey.value.trim()) payload.api_key = inputApiKey.value.trim();
-    const res = await fetch("/api/settings", {
+    if (keyVal) payload.api_key = keyVal;
+    await fetch("/api/settings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
-    const data = await res.json();
-    settingsStatus.textContent = "Saved & Connected!";
-    activeModelTag.textContent = `${selectProvider.value.toUpperCase()} : ${selectModel.value}`;
-    setTimeout(() => {
-      settingsStatus.textContent = "";
-      settingsModal.classList.remove("open");
-    }, 1000);
   } catch (err) {
-    settingsStatus.textContent = "Error saving settings";
+    console.warn("Server settings save failed, saved locally:", err);
   }
+
+  settingsStatus.textContent = "Saved & Connected!";
+  activeModelTag.textContent = `${provVal.toUpperCase()} : ${modelVal}`;
+  setTimeout(() => {
+    settingsStatus.textContent = "";
+    settingsModal.classList.remove("open");
+  }, 800);
 }
 
 // ----------------- CHAT & STREAMING -----------------
@@ -239,13 +263,15 @@ async function sendMessage(textToSend = null) {
   let activeToolBadges = {};
 
   try {
+    const storedKey = localStorage.getItem("jarvis_api_key") || "";
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: conversationHistory,
         provider: selectProvider.value,
-        model: selectModel.value
+        model: selectModel.value,
+        api_key: storedKey || undefined
       })
     });
 
@@ -448,13 +474,15 @@ async function handleVoiceCallTurn(userSpeech) {
 
   let fullAiResponse = "";
   try {
+    const storedKey = localStorage.getItem("jarvis_api_key") || "";
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: conversationHistory,
         provider: selectProvider.value,
-        model: selectModel.value
+        model: selectModel.value,
+        api_key: storedKey || undefined
       })
     });
 

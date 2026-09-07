@@ -1,5 +1,6 @@
 import os
 import json
+import tempfile
 from typing import List, Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -108,31 +109,31 @@ def get_settings():
 @app.post("/api/settings")
 def update_settings(data: SettingsUpdate):
     if data.api_key:
-        agent.api_key = data.api_key
+        agent.api_key = data.api_key.strip()
+        os.environ["AI_API_KEY"] = data.api_key.strip()
         try:
             if not os.path.exists(ENV_FILE):
-                with open(ENV_FILE, "w") as f:
+                with open(ENV_FILE, "w", encoding="utf-8") as f:
                     f.write("")
-            set_key(ENV_FILE, "AI_API_KEY", data.api_key)
+            set_key(ENV_FILE, "AI_API_KEY", data.api_key.strip())
         except Exception:
             pass
-        os.environ["AI_API_KEY"] = data.api_key
 
     if data.provider:
-        agent.provider = data.provider
+        agent.provider = data.provider.strip()
+        os.environ["AI_PROVIDER"] = data.provider.strip()
         try:
-            set_key(ENV_FILE, "AI_PROVIDER", data.provider)
+            set_key(ENV_FILE, "AI_PROVIDER", data.provider.strip())
         except Exception:
             pass
-        os.environ["AI_PROVIDER"] = data.provider
 
     if data.model:
-        agent.model = data.model
+        agent.model = data.model.strip()
+        os.environ["AI_MODEL"] = data.model.strip()
         try:
-            set_key(ENV_FILE, "AI_MODEL", data.model)
+            set_key(ENV_FILE, "AI_MODEL", data.model.strip())
         except Exception:
             pass
-        os.environ["AI_MODEL"] = data.model
 
     if data.system_prompt:
         agent.system_prompt = data.system_prompt
@@ -141,11 +142,14 @@ def update_settings(data: SettingsUpdate):
 
 @app.post("/api/chat")
 async def chat_endpoint(req: ChatRequest):
+    # If request brings its own API key, use it; otherwise fallback to agent/env key
+    active_key = (req.api_key or agent.api_key or os.getenv("AI_API_KEY", "")).strip()
+
     async def sse_generator():
         messages = [m.model_dump() for m in req.messages]
         async for event in agent.chat_stream(
             messages=messages,
-            api_key=req.api_key,
+            api_key=active_key,
             model=req.model,
             provider=req.provider
         ):

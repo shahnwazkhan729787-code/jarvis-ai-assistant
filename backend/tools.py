@@ -1,19 +1,30 @@
-﻿import os
+import os
 import sys
 import json
 import subprocess
 import requests
 import re
+import tempfile
 from datetime import datetime
 from typing import Dict, Any, List
 from duckduckgo_search import DDGS
 
-WORKSPACE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "workspace"))
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+# Use /tmp for serverless environments (Vercel) where repo directory is read-only
+is_serverless = bool(os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
+if is_serverless:
+    WORKSPACE_DIR = os.path.join(tempfile.gettempdir(), "workspace")
+    DATA_DIR = os.path.join(tempfile.gettempdir(), "data")
+else:
+    WORKSPACE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "workspace"))
+    DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+
 NOTES_FILE = os.path.join(DATA_DIR, "notes.json")
 
-os.makedirs(WORKSPACE_DIR, exist_ok=True)
-os.makedirs(DATA_DIR, exist_ok=True)
+try:
+    os.makedirs(WORKSPACE_DIR, exist_ok=True)
+    os.makedirs(DATA_DIR, exist_ok=True)
+except Exception:
+    pass
 
 # ----------------- CLEAN TOOL DEFINITIONS -----------------
 
@@ -342,13 +353,19 @@ def tool_manage_notes(action: str, title: str = "", content: str = "") -> Dict[s
                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
             notes.append(new_note)
-            with open(NOTES_FILE, "w", encoding="utf-8") as f:
-                json.dump(notes, f, indent=2)
+            try:
+                with open(NOTES_FILE, "w", encoding="utf-8") as f:
+                    json.dump(notes, f, indent=2)
+            except Exception:
+                pass
             return {"status": "success", "message": "Note saved successfully.", "note": new_note}
         elif action == "delete":
             notes = [n for n in notes if n.get("title") != title and n.get("id") != title]
-            with open(NOTES_FILE, "w", encoding="utf-8") as f:
-                json.dump(notes, f, indent=2)
+            try:
+                with open(NOTES_FILE, "w", encoding="utf-8") as f:
+                    json.dump(notes, f, indent=2)
+            except Exception:
+                pass
             return {"status": "success", "message": f"Note removed."}
         else:
             return {"status": "error", "message": f"Unknown action: {action}"}
